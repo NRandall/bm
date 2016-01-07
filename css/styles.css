@@ -1,0 +1,23 @@
+@font-face {
+    font-family: 'Montserrat';
+    src: url("../fonts/Montserrat/Montserrat-Regular.ttf") format("truetype");
+}
+#gameCanvas  {
+  position:absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+body {
+  background: black;
+}
+h1 {
+	font-family: 'Montserrat';
+	font-size: 60px;
+	margin: auto;
+	padding-top: 10px;
+	width: 51.5%;
+	color: white;
+}
