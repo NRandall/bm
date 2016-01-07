@@ -65,7 +65,7 @@ function player(number, playerLoc) {
     }
     if (keystate[this.keys.pBomb]) {
       if (this.bombInventory > 0 && Date.now() - this.lastLay > 300 && this.canLay()) {
-        bombs.push(new bomb((Math.round((this.x)/50))*50, (Math.round((this.y)/50)) *50, this.bombPower));
+        bombs.push(new bomb((Math.round((this.x)/50))*50, (Math.round((this.y)/50)) *50, this.bombPower, this.number));
         this.bombInventory --;
         //console.log('laid',this.canLay());
         this.lastLay = Date.now();

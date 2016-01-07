@@ -37,12 +37,13 @@ function flame(power, x, y) {
 }
 
 //Bomb constructor
-function bomb(x, y, power) {
+function bomb(x, y, power, laidBy) {
   this.x = x;
   this.y = y;
   this.time = 0;
   this.scaleMod = 1;
   this.power = power;
+  this.laidBy = laidBy;
 
   this.explode = function() {
     var coord = [this.x/50, this.y/50];
@@ -143,7 +144,7 @@ function bomb(x, y, power) {
       flames.push (new flame(this.power,this.x, this.y));
       bombs.shift();
       this.explode();
-      players[this.laidBy].bombInventory++;
+      players[this.laidBy-1].bombInventory++;
     }
   };
   this.draw = function() {
@@ -167,10 +168,12 @@ function brick(x, y) {
 function findBlock() {
   var openSpace = true;
   bricks.forEach(function(brick) {
-    if ((player.x < brick.x + 50 && player.y < brick.y + 50 &&
-          brick.x < player.x + 50 && brick.y < player.y + 50)) {
-        openSpace = false;
-      }
+    for(var i = 0; i < players.length; i++) {
+      if ((players[i].x < brick.x + 50 && players[i].y < brick.y + 50 &&
+            brick.x < players[i].x + 50 && brick.y < players[i].y + 50)) {
+          openSpace = false;
+        }
+    }
   })
   return openSpace;
 }
@@ -183,31 +186,33 @@ function powerUp(explodedCoord) {
 
   this.update = function() {
     //if player picks up, do this-
-    if ((player.x < this.x + 50 && player.y < this.y + 50 &&
-          this.x < player.x + 50 && this.y < player.y + 50)) {
-    // if ((player.x < this.x + 50 && player.x >= this.x) || (player.y < this.y +50 && player.y >= this.y) ||
-    //  (player.x + 50 >= this.x && player.x < this.x + 50) || (player.y +50 >= this.y && player.y < this.y + 50)) {
-      //if (player.y >= this.y && player.y < this.y + 50){
-        switch (this.item){
-          case 'skull' :
-            player.skull = true;
-            console.log ("skull: " + player.skull);
-            break;
-          case 'boostSpeed' :
-            player.speed++;
-            console.log ("speed: " + player.speed);
-            break;
-          case 'boostFlame' :
-            player.bombPower++;
-            console.log ("flame: " + player.bombPower);
-            break;
-          case 'extraBomb' :
-            player.bombInventory++;
-            console.log ("bombs: " + player.bombInventory);
-            break;
-        }
-        powerUps.shift();
-      //}
+    for(var i = 0; i < players.length; i++) {
+      if ((players[i].x < this.x + 50 && players[i].y < this.y + 50 &&
+            this.x < players[i].x + 50 && this.y < players[i].y + 50)) {
+      // if ((player.x < this.x + 50 && player.x >= this.x) || (player.y < this.y +50 && player.y >= this.y) ||
+      //  (player.x + 50 >= this.x && player.x < this.x + 50) || (player.y +50 >= this.y && player.y < this.y + 50)) {
+        //if (player.y >= this.y && player.y < this.y + 50){
+          switch (this.item){
+            case 'skull' :
+              players[i].skull = true;
+              console.log ("skull: " + players[i].skull);
+              break;
+            case 'boostSpeed' :
+              players[i].speed++;
+              console.log ("speed: " + players[i].speed);
+              break;
+            case 'boostFlame' :
+              players[i].bombPower++;
+              console.log ("flame: " + players[i].bombPower);
+              break;
+            case 'extraBomb' :
+              players[i].bombInventory++;
+              console.log ("bombs: " + players[i].bombInventory);
+              break;
+          }
+          powerUps.shift();
+        //}
+      }
     }
   };
   this.draw = function() {
