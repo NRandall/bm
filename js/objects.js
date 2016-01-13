@@ -1,5 +1,5 @@
 
-function flame(power, x, y) {
+function flame(flame, x, y) {
 
   // this.power = power;
   // this.x = x;
@@ -20,21 +20,20 @@ function flame(power, x, y) {
 
     ctx.drawImage(flameImg,125, 205, 15, 15, x, y, 50, 50);
 
-    for (var i = 1; i < power; i++) {
-      ctx.drawImage(flameImg,143, 223, 15, 15, x + (50*i), y, 50, 50);
-      ctx.drawImage(flameImg,143, 223, 15, 15, x - (50*i), y, 50, 50);
-      ctx.drawImage(flameImg,107, 223, 15, 15, x, y + (50*i), 50, 50);
-      ctx.drawImage(flameImg,107, 223, 15, 15, x, y - (50*i), 50, 50);
-      finished =  i+1 ;
-    } 
-    console.log(finished);
+    for (var i = 1; i < flame.right; i++) {ctx.drawImage(flameImg,143, 223, 15, 15, x + (50*i), y, 50, 50)};
+    for (var i = 1; i < flame.left; i++) {ctx.drawImage(flameImg,143, 223, 15, 15, x - (50*i), y, 50, 50)};
+    for (var i = 1; i < flame.up; i++) {ctx.drawImage(flameImg,107, 223, 15, 15, x, y + (50*i), 50, 50)};
+    for (var i = 1; i < flame.down; i++) {ctx.drawImage(flameImg,107, 223, 15, 15, x, y - (50*i), 50, 50)};
+      
     ctx.drawImage(flameImg,141, 205, 15, 15, x + (50*finished), y, 50, 50);
     ctx.drawImage(flameImg,109, 205, 15, 15, x - (50*finished), y, 50, 50);
     ctx.drawImage(flameImg,125, 221, 15, 15, x, y + (50*finished), 50, 50);
     ctx.drawImage(flameImg,125, 189, 15, 15, x, y - (50*finished), 50, 50);
-  }
-
+  
+  
 }
+
+
 
 //Bomb constructor
 function bomb(x, y, power, laidBy) {
@@ -47,6 +46,8 @@ function bomb(x, y, power, laidBy) {
 
   this.explode = function() {
     var coord = [this.x/50, this.y/50];
+    var flame = {right : 0, left : 0, up : 0, down : 0};
+    //if on an even x or y grid, explode accordingly
     if (coord[0] % 2 === 0){
       var up = false, down = false, left = true, right = true;
     } else if (coord[1] % 2 === 0){
@@ -56,18 +57,18 @@ function bomb(x, y, power, laidBy) {
     }
     var caught = [];
     var otherBombs = [];
-    //check bomb square to see if player is standing on bomb
     
+    //check bomb square to see if player is standing on bomb
     for(var i = 0; i < players.length; i++){
       if (players[i].playerLoc[0] === coord[0] && players[i].playerLoc[1] === coord[1]) players[i].die();
     }
     //check flamePath for bricks and players
     for (var i = 1; i <= this.power; i++) {
-      for(var i = 0; i < players.length; i++){
-        if (players[i].playerLoc[0] === coord[0] + i && players[i].playerLoc[1] === coord[1] && right) players[i].die();
-        if (players[i].playerLoc[0] === coord[0] - i && players[i].playerLoc[1] === coord[1] && left) players[i].die();
-        if (players[i].playerLoc[0] === coord[0] && players[i].playerLoc[1] === coord[1] + i && down) players[i].die();
-        if (players[i].playerLoc[0] === coord[0] && players[i].playerLoc[1] === coord[1] - i && up) players[i].die();
+      for(var j = 0; j < players.length; j++){
+        if (players[j].playerLoc[0] === coord[0] + i && players[j].playerLoc[1] === coord[1] && right) players[j].die();
+        if (players[j].playerLoc[0] === coord[0] - i && players[j].playerLoc[1] === coord[1] && left) players[j].die();
+        if (players[j].playerLoc[0] === coord[0] && players[j].playerLoc[1] === coord[1] + i && down) players[j].die();
+        if (players[j].playerLoc[0] === coord[0] && players[j].playerLoc[1] === coord[1] - i && up) players[j].die();
       }
       
       //checks for bricks out 1 at a time when the explosion happens looking for collision
@@ -75,19 +76,19 @@ function bomb(x, y, power, laidBy) {
         if (brick.coord[0] === coord[0] + i && brick.coord[1] === coord[1] && right) {
           right = false;
           caught.push(ind);
-        }
+        } else flame.right++;
         if (brick.coord[0] === coord[0] - i && brick.coord[1] === coord[1] && left) {
           caught.push(ind);
           left = false;
-        }
+        } else flame.left++;
         if (brick.coord[0] === coord[0] && brick.coord[1] === coord[1] + i && down) {
           caught.push(ind);
           down = false;
-        }
+        } else flame.down++;
         if (brick.coord[0] === coord[0] && brick.coord[1] === coord[1] - i && up) {
           caught.push(ind);
           up = false;
-        }
+        } else flame.up++;
       })
       //check if powerups get exploded
       powerUps.forEach(function(power, ind){
@@ -141,7 +142,7 @@ function bomb(x, y, power, laidBy) {
         this.scaleMod += (Math.sin(this.time*.75)/25);
       }
     } else {
-      flames.push (new flame(this.power,this.x, this.y));
+      flames.push (new flame(this.flame,this.x, this.y));
       bombs.shift();
       this.explode();
       players[this.laidBy-1].bombInventory++;
@@ -189,9 +190,6 @@ function powerUp(explodedCoord) {
     for(var i = 0; i < players.length; i++) {
       if ((players[i].x < this.x + 50 && players[i].y < this.y + 50 &&
             this.x < players[i].x + 50 && this.y < players[i].y + 50)) {
-      // if ((player.x < this.x + 50 && player.x >= this.x) || (player.y < this.y +50 && player.y >= this.y) ||
-      //  (player.x + 50 >= this.x && player.x < this.x + 50) || (player.y +50 >= this.y && player.y < this.y + 50)) {
-        //if (player.y >= this.y && player.y < this.y + 50){
           switch (this.item){
             case 'skull' :
               players[i].skull = true;
@@ -211,7 +209,6 @@ function powerUp(explodedCoord) {
               break;
           }
           powerUps.shift();
-        //}
       }
     }
   };

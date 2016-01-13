@@ -28,6 +28,7 @@ canvas.width = WIDTH;
 canvas.height = HEIGHT;
 var players = [], bombs = [], bricks = [], powerUps = [], flames = [];
 var waitToRepeat = false;
+var endGame = false;
 var invalidBlockAreas = [
   '1,1',
   '1,2',
@@ -43,6 +44,12 @@ function main() {
     keystate[evt.keyCode] = true;
   });
   document.addEventListener("keyup", function(evt) {
+    if (keystate[keys1.pUp] || keystate[keys1.pDown] || keystate[keys1.pLeft] || keystate[keys1.pRight]) {
+      players[0].frame = 0; 
+    }
+    if (keystate[keys2.pUp] || keystate[keys2.pDown] || keystate[keys2.pLeft] || keystate[keys2.pRight]) {
+      players[1].frame = 0; 
+    }
     delete keystate[evt.keyCode];
   });
 
@@ -113,6 +120,18 @@ function update() {
       }
       waitToRepeat = false;
 
+  }
+
+  if (endGame) {
+    if (players[0].playerDead && players[1].playerDead) {
+      setTimeout(function(){ alert(winner + "It's a Tie!!!!!!!!!!!!!"); }, 500);
+      location.reload();
+    } else {
+      var winner = "White"
+      if (players[0].playerDead) winner = "Blue";
+      setTimeout(function(){ alert(winner + " Wins!"); }, 500);
+      location.reload();
+    }
   }
 }
 

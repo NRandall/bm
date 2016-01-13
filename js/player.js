@@ -1,8 +1,8 @@
 function player(number, playerLoc) {
   this.number = number;
-  this.x = (playerLoc[0] * 50);
-  this.y = (playerLoc[1] * 50);
   this.playerLoc = playerLoc;
+  this.x = (this.playerLoc[0] * 50);
+  this.y = (this.playerLoc[1] * 50);
   this.bombInventory = 1;
   this.speed = 3;
   this.bombPower = 1;
@@ -22,6 +22,7 @@ function player(number, playerLoc) {
   this.die = function() {
     console.log('Boom, player died');
     this.playerDead = true;
+    endGame = true;
   },
 
   this.update = function() {
@@ -79,7 +80,7 @@ function player(number, playerLoc) {
       var bombCoord = [b.x/50, b.y/50];
       // console.log(player.playerLoc[0],bombCoord[0], player.playerLoc[1], bombCoord[1]);
       if ((this.playerLoc[0] === bombCoord[0] && this.playerLoc[1] === bombCoord[1])) {
-        // console.log('cant lay here');
+        //console.log('cant lay here');
         return false;
       }
     })
@@ -87,9 +88,13 @@ function player(number, playerLoc) {
   },
 
   this.draw = function() {
+    //cycle trough frames of sprite sheet
     if (this.frame % 3 === 0) var mod = 39 * (this.frame/3);
     else var mod = 39 * ((this.frame-this.frame % 3) / 3);
+
     var idle = 'down';
+    
+    //choose correct row of sprites depending on direction
     switch (this.dir){
       case 'up':
         ctx.drawImage(this.playerImg, 2+mod, 101, 32, 46, this.x, this.y - 25, 50, 75);
