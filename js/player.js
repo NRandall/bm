@@ -73,17 +73,20 @@ function player(number, playerLoc) {
       }
     }
     // else this.frame = 0;
+  //   && this.canLay()
   },
 
   this.canLay = function() {
-    bombs.forEach(function(b) {
-      var bombCoord = [b.x/50, b.y/50];
-      // console.log(player.playerLoc[0],bombCoord[0], player.playerLoc[1], bombCoord[1]);
-      if ((this.playerLoc[0] === bombCoord[0] && this.playerLoc[1] === bombCoord[1])) {
-        //console.log('cant lay here');
-        return false;
-      }
-    })
+    if (bombs.length > 1) {
+      bombs.forEach(function(b) {
+        //var bombCoord = [b.x/50, b.y/50];
+        console.log(bombCoord);
+        if ((this.x === bombCoord[0] && this.y === bombCoord[1])) {
+          console.log('cant lay here');
+          return false;
+        }
+      })
+    }
     return true;
   },
 
