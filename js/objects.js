@@ -1,38 +1,63 @@
 
-function flame(flame, x, y) {
+function flame(explosionInfo, x, y, caught) {
 
-  // this.power = power;
-  // this.x = x;
-  // this.y = y;
+  this.coord = [x/50, y/50]
   this.time = 0;
+  this.explosionInfo = explosionInfo;
+  this.caught = caught;
   var finished = 1;
 
-  this.update = function(){
+  this.update = function(coord){
     if (this.time < 40){
       this.time += 1;
+
+      //kill players that walk into a flame
+      for(var j = 0; j < players.length; j++){
+        for (var i = 0; i <= explosionInfo[0]; i++) {
+          if (players[j].playerLoc[0] === this.coord[0] + i && players[j].playerLoc[1] === coord[1]) players[j].die();
+        }
+        for (var i = 0; i <= explosionInfo[1]; i++) {
+          if (players[j].playerLoc[0] === this.coord[0] - i && players[j].playerLoc[1] === coord[1]) players[j].die();
+        }
+        for (var i = 0; i <= explosionInfo[2]; i++) {
+          if (players[j].playerLoc[0] === this.coord[0] && players[j].playerLoc[1] === coord[1] + i) players[j].die();
+        }
+        for (var i = 0; i <= explosionInfo[3]; i++) {
+          if (players[j].playerLoc[0] === this.coord[0] && players[j].playerLoc[1] === coord[1] - i) players[j].die();
+        }
+      }
     } else {
+      // for (var i = 0; i > this.caught.length; i++) {
+      //   if (getRandom ('hasItem')){
+      //     setTimeout(function(){ powerUps.push(new powerUp(this.caught[i])); }, 2000);
+      //   }
+      // }
       flames.shift();
     }
+
   }
   
 
   this.draw = function() {
 
+    //draw center flame hub
     ctx.drawImage(flameImg,125, 205, 15, 15, x, y, 50, 50);
 
-    for (var i = 1; i < flame.right; i++) {ctx.drawImage(flameImg,143, 223, 15, 15, x + (50*i), y, 50, 50)};
-    for (var i = 1; i < flame.left; i++) {ctx.drawImage(flameImg,143, 223, 15, 15, x - (50*i), y, 50, 50)};
-    for (var i = 1; i < flame.up; i++) {ctx.drawImage(flameImg,107, 223, 15, 15, x, y + (50*i), 50, 50)};
-    for (var i = 1; i < flame.down; i++) {ctx.drawImage(flameImg,107, 223, 15, 15, x, y - (50*i), 50, 50)};
-      
-    ctx.drawImage(flameImg,141, 205, 15, 15, x + (50*finished), y, 50, 50);
-    ctx.drawImage(flameImg,109, 205, 15, 15, x - (50*finished), y, 50, 50);
-    ctx.drawImage(flameImg,125, 221, 15, 15, x, y + (50*finished), 50, 50);
-    ctx.drawImage(flameImg,125, 189, 15, 15, x, y - (50*finished), 50, 50);
-  
-  
-}
+    //draw middle flame parts
+    for (var i = 1; i < explosionInfo[0]; i++) {ctx.drawImage(flameImg,143, 223, 15, 15, x + (50*i), y, 50, 50)};
+      for (var i = 1; i < explosionInfo[1]; i++) {ctx.drawImage(flameImg,143, 223, 15, 15, x - (50*i), y, 50, 50)};
+        for (var i = 1; i < explosionInfo[2]; i++) {ctx.drawImage(flameImg,107, 223, 15, 15, x, y + (50*i), 50, 50)};
+          for (var i = 1; i < explosionInfo[3]; i++) {ctx.drawImage(flameImg,107, 223, 15, 15, x, y - (50*i), 50, 50)};
 
+    //draw flame caps        
+  if (explosionInfo[0] > 0) ctx.drawImage(flameImg,141, 205, 15, 15, x + (50*explosionInfo[0]), y, 50, 50);
+  if (explosionInfo[1] > 0) ctx.drawImage(flameImg,109, 205, 15, 15, x - (50*explosionInfo[1]), y, 50, 50);
+  if (explosionInfo[2] > 0) ctx.drawImage(flameImg,125, 221, 15, 15, x, y + (50*explosionInfo[2]), 50, 50);
+  if (explosionInfo[3] > 0) ctx.drawImage(flameImg,125, 189, 15, 15, x, y - (50*explosionInfo[3]), 50, 50);
+
+
+}
+}
 
 
 //Bomb constructor
@@ -43,20 +68,25 @@ function bomb(x, y, power, laidBy) {
   this.scaleMod = 1;
   this.power = power;
   this.laidBy = laidBy;
+  this.explosionInfo = [this.power, this.power, this.power, this.power];
+  this.caught = [];
 
   this.explode = function() {
     var coord = [this.x/50, this.y/50];
-    var flame = {right : 0, left : 0, up : 0, down : 0};
     //if on an even x or y grid, explode accordingly
     if (coord[0] % 2 === 0){
       var up = false, down = false, left = true, right = true;
+      var explosionInfo = [this.power, this.power, 0, 0];
     } else if (coord[1] % 2 === 0){
       var up = true, down = true, left = false, right = false;
+      var explosionInfo = [0, 0, this.power, this.power];
     } else {
       var up = true, down = true, left = true, right = true;
+      var explosionInfo = [this.power, this.power, this.power, this.power];
     }
     var caught = [];
     var otherBombs = [];
+    
     
     //check bomb square to see if player is standing on bomb
     for(var i = 0; i < players.length; i++){
@@ -76,19 +106,25 @@ function bomb(x, y, power, laidBy) {
         if (brick.coord[0] === coord[0] + i && brick.coord[1] === coord[1] && right) {
           right = false;
           caught.push(ind);
-        } else flame.right++;
+          explosionInfo[0] = brick.coord[0] - coord[0];
+        } 
         if (brick.coord[0] === coord[0] - i && brick.coord[1] === coord[1] && left) {
           caught.push(ind);
           left = false;
-        } else flame.left++;
+          explosionInfo[1] = coord[0] - brick.coord[0];
+        } else {
+
+        }
         if (brick.coord[0] === coord[0] && brick.coord[1] === coord[1] + i && down) {
           caught.push(ind);
           down = false;
-        } else flame.down++;
+          explosionInfo[2] = brick.coord[1] - coord[1];
+        } 
         if (brick.coord[0] === coord[0] && brick.coord[1] === coord[1] - i && up) {
           caught.push(ind);
           up = false;
-        } else flame.up++;
+          explosionInfo[3] = coord[1] - brick.coord[1];
+        } 
       })
       //check if powerups get exploded
       powerUps.forEach(function(power, ind){
@@ -106,7 +142,7 @@ function bomb(x, y, power, laidBy) {
         }
       })
 
-        bombs.forEach(function(bomb, ind){
+      bombs.forEach(function(bomb, ind){
         if ((bomb.x / 50)  === coord[0] + i && (bomb.y / 50) === coord[1] && right) {
           bomb.time = 800;
         }
@@ -120,21 +156,24 @@ function bomb(x, y, power, laidBy) {
           bomb.time = 800;
         }
       })
+
     }
     var i = 0;
     
     if (caught.length > 0)  {
       do {
         if (getRandom ('hasItem')){
-          powerUps.push(new powerUp(caught[i]));
+          setTimeout(function(){ powerUps.push(new powerUp(caught[i])); }, 2000);
         }
         bricks.splice(caught[i] - i , 1);
         i++;
       } while (i < caught.length)
     }
     i = 0;
-    
+    this.explosionInfo = explosionInfo;
+    this.caught = caught;
   }
+
   this.update = function() {
     if (this.time < 800){
       this.time += 10;
@@ -142,10 +181,10 @@ function bomb(x, y, power, laidBy) {
         this.scaleMod += (Math.sin(this.time*.75)/25);
       }
     } else {
-      flames.push (new flame(this.flame,this.x, this.y));
-      bombs.shift();
       this.explode();
+      flames.push (new flame(this.explosionInfo,this.x, this.y,this.caught));
       players[this.laidBy-1].bombInventory++;
+      bombs.shift();
     }
   };
   this.draw = function() {
@@ -171,9 +210,9 @@ function findBlock() {
   bricks.forEach(function(brick) {
     for(var i = 0; i < players.length; i++) {
       if ((players[i].x < brick.x + 50 && players[i].y < brick.y + 50 &&
-            brick.x < players[i].x + 50 && brick.y < players[i].y + 50)) {
-          openSpace = false;
-        }
+        brick.x < players[i].x + 50 && brick.y < players[i].y + 50)) {
+        openSpace = false;
+      }
     }
   })
   return openSpace;
@@ -189,26 +228,29 @@ function powerUp(explodedCoord) {
     //if player picks up, do this-
     for(var i = 0; i < players.length; i++) {
       if ((players[i].x < this.x + 50 && players[i].y < this.y + 50 &&
-            this.x < players[i].x + 50 && this.y < players[i].y + 50)) {
-          switch (this.item){
-            case 'skull' :
-              players[i].skull = true;
-              console.log ("skull: " + players[i].skull);
-              break;
-            case 'boostSpeed' :
-              players[i].speed++;
-              console.log ("speed: " + players[i].speed);
-              break;
-            case 'boostFlame' :
-              players[i].bombPower++;
-              console.log ("flame: " + players[i].bombPower);
-              break;
-            case 'extraBomb' :
-              players[i].bombInventory++;
-              console.log ("bombs: " + players[i].bombInventory);
-              break;
-          }
-          powerUps.shift();
+        this.x < players[i].x + 50 && this.y < players[i].y + 50)) {
+        switch (this.item){
+          case 'skull' :
+          players[i].skull();
+          console.log ("skull: ");
+          powerUps.splice(powerUps.indexOf(this), 1);
+          break;
+          case 'boostSpeed' :
+          players[i].speed++;
+          console.log ("speed: " + players[i].speed);
+          powerUps.splice(powerUps.indexOf(this), 1);
+          break;
+          case 'boostFlame' :
+          players[i].bombPower++;
+          console.log ("flame: " + players[i].bombPower);
+          powerUps.splice(powerUps.indexOf(this), 1);
+          break;
+          case 'extraBomb' :
+          players[i].bombInventory++;
+          console.log ("bombs: " + players[i].bombInventory);
+          powerUps.splice(powerUps.indexOf(this), 1);
+          break;
+        }
       }
     }
   };
@@ -250,13 +292,13 @@ function getRandom(item) {
     if (randNum > 4) randNum -= 4;
     switch (randNum) {
       case 1:
-        return 'boostSpeed';
+      return 'boostSpeed';
       case 2:
-        return 'extraBomb';
+      return 'extraBomb';
       case 3:
-        return 'boostFlame';
+      return 'boostFlame';
       case 4:
-        return 'skull';
+      return 'skull';
     }
   }
 }

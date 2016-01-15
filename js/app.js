@@ -108,7 +108,7 @@ function update() {
   }
   if (flames.length > 0){
     for(var i = 0; i < flames.length; i++){
-      flames[i].update();
+      flames[i].update(flames[i].coord);
     }
   }
 
@@ -123,15 +123,23 @@ function update() {
   }
 
   if (endGame) {
-    if (players[0].playerDead && players[1].playerDead) {
-      setTimeout(function(){ alert(winner + "It's a Tie!!!!!!!!!!!!!"); }, 500);
-      location.reload();
-    } else {
+    if (players[0].playerDead && players[1].playerDead && endGame) {
+      setTimeout(function(){ 
+        alert(winner + "It's a Tie!!!!!!!!!!!!!"); 
+        location.reload();
+      }, 500);
+    } 
+    if (endGame) {
       var winner = "White"
       if (players[0].playerDead) winner = "Blue";
-      setTimeout(function(){ alert(winner + " Wins!"); }, 500);
-      location.reload();
+      setTimeout(function(){ 
+        alert(winner + " Wins!"); 
+        endGame = false
+        location.reload();
+
+      }, 500);
     }
+    endGame = false;
   }
 }
 
@@ -190,6 +198,13 @@ function draw()  {
   }
 
   ctx.restore();
+}
+
+function sleep(miliseconds) {
+   var currentTime = new Date().getTime();
+
+   while (currentTime + miliseconds >= new Date().getTime()) {
+   }
 }
 
 main();
