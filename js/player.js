@@ -10,6 +10,7 @@ function player(number, playerLoc) {
   this.lastLay = Date.now();
   this.dir = 'down';
   this.frame = 0;
+  this.poisonTime = 0;
   this.playerImg = new Image();
   if (this.number === 1) {
     this.keys = keys1;
@@ -22,30 +23,53 @@ function player(number, playerLoc) {
   this.die = function() {
     console.log('Boom, player died');
     this.playerDead = true;
+    this.dir = 'die';
     endGame = true;
   },
 
   this.update = function() {
     this.playerLoc = playerCoord(this.x, this.y);
+    //if the player is poisoned, reverse up and down controls
+    if (Date.now() - this.poisonTime < 5000) {
+        if (keystate[this.keys.pDown] && inRange(this.x, this.y, 'ver') && findBlock()) {
+        if (this.y <= 50 + this.speed) this.y = 50;
+        else this.y -= this.speed;
+        if (!findBlock()) this.y += this.speed+1;
+        this.x = gridlock;
+        this.dir = 'up';
+        if (this.frame < 23) this.frame++;
+        else this.frame = 0;
+      }
+        if (keystate[this.keys.pUp] && inRange(this.x, this.y, 'ver') && findBlock()) {
+        if (this.y >= 550 - this.speed) this.y = 550;
+        else this.y += this.speed;
+        if (!findBlock()) this.y -= this.speed+1;
+        this.x = gridlock;
+        this.dir = 'down';
+        if (this.frame < 23) this.frame++;
+        else this.frame = 0;
+      }
+    } else {
+        if (keystate[this.keys.pUp] && inRange(this.x, this.y, 'ver') && findBlock()) {
+        if (this.y <= 50 + this.speed) this.y = 50;
+        else this.y -= this.speed;
+        if (!findBlock()) this.y += this.speed+1;
+        this.x = gridlock;
+        this.dir = 'up';
+        if (this.frame < 23) this.frame++;
+        else this.frame = 0;
+        }
+        if (keystate[this.keys.pDown] && inRange(this.x, this.y, 'ver') && findBlock()) {
+        if (this.y >= 550 - this.speed) this.y = 550;
+        else this.y += this.speed;
+        if (!findBlock()) this.y -= this.speed+1;
+        this.x = gridlock;
+        this.dir = 'down';
+        if (this.frame < 23) this.frame++;
+        else this.frame = 0;
+      }
+    }
 
-    if (keystate[this.keys.pUp] && inRange(this.x, this.y, 'ver') && findBlock()) {
-      if (this.y <= 50 + this.speed) this.y = 50;
-      else this.y -= this.speed;
-      if (!findBlock()) this.y += this.speed+1;
-      this.x = gridlock;
-      this.dir = 'up';
-      if (this.frame < 23) this.frame++;
-      else this.frame = 0;
-    }
-    if (keystate[this.keys.pDown] && inRange(this.x, this.y, 'ver') && findBlock()) {
-      if (this.y >= 550 - this.speed) this.y = 550;
-      else this.y += this.speed;
-      if (!findBlock()) this.y -= this.speed+1;
-      this.x = gridlock;
-      this.dir = 'down';
-      if (this.frame < 23) this.frame++;
-      else this.frame = 0;
-    }
     if (keystate[this.keys.pLeft] && inRange(this.y, this.x, 'hor') && findBlock()) {
       if (this.x <= 50 + this.speed) this.x = 50;
       else this.x -= this.speed;
@@ -65,30 +89,31 @@ function player(number, playerLoc) {
       else this.frame = 0;
     }
     if (keystate[this.keys.pBomb]) {
-      if (this.bombInventory > 0 && Date.now() - this.lastLay > 300 && this.canLay()) {
+      if (this.bombInventory > 0 && Date.now() - this.lastLay > 300 && this.canLay(this.playerLoc)) {
         bombs.push(new bomb((Math.round((this.x)/50))*50, (Math.round((this.y)/50)) *50, this.bombPower, this.number));
         this.bombInventory --;
-        //console.log('laid',this.canLay());
         this.lastLay = Date.now();
+        console.log("------------------------------");
       }
     }
-    // else this.frame = 0;
-  //   && this.canLay()
-  },
+  };
 
-  this.canLay = function() {
-    if (bombs.length > 1) {
+  this.canLay = function(playerCoordinates) {
+    if (bombs.length >= 1) {
       bombs.forEach(function(b) {
-        //var bombCoord = [b.x/50, b.y/50];
-        console.log(bombCoord);
-        if ((this.x === bombCoord[0] && this.y === bombCoord[1])) {
+        console.log(playerCoordinates[0],playerCoordinates[1],b.x,b.y);
+        if ((playerCoordinates[0] === b.x/50 && playerCoordinates[1] === b.y/50)) {
           console.log('cant lay here');
           return false;
         }
       })
     }
     return true;
-  },
+  };
+
+  this.skull = function(){
+    this.poisonTime = Date.now();
+  }
 
   this.draw = function() {
     //cycle trough frames of sprite sheet
@@ -111,11 +136,14 @@ function player(number, playerLoc) {
       case 'right':
         ctx.drawImage(this.playerImg, 2+mod, 51, 32, 46, this.x, this.y - 25, 50, 75);
         break;
+      case 'die':
+        ctx.drawImage(this.playerImg, 2+mod, 201, 32, 46, this.x, this.y - 25, 50, 75);
+        break;
       case 'def':
         ctx.drawImage(this.playerImg, 2, 51, 32, 46, this.x, this.y - 25, 50, 75);
     }
   }
-}
+};
 
 function playerCoord(x,y,dir) {
   tileX = Math.round((x)/50);
@@ -135,4 +163,4 @@ function playerCoord(x,y,dir) {
       break;
   }
   return [tileX, tileY];
-}
+};
