@@ -19,7 +19,7 @@ var keys1 = {
 };
 var keys2 = {
   pUp : 38, 
-  pDown : 40, 
+  pDown : 40,
   pLeft : 37, 
   pRight : 39, 
   pBomb : 96
@@ -37,7 +37,6 @@ var invalidBlockAreas = [
   '12,11',
   '13,10'
 ]
-
 
 function main() {
   document.addEventListener("keydown", function(evt) {
@@ -64,7 +63,6 @@ function main() {
   window.requestAnimationFrame(loop, canvas);
 }
 
-
 function init() {
   players.push(new player(players.length+1, [1,1]));
   players.push(new player(players.length+1, [13,11]));
@@ -89,7 +87,6 @@ function init() {
     }
   }
 }
-
 
 function update() {
   for(var i = 0; i < players.length; i++){
